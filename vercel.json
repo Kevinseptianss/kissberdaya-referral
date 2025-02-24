@@ -1,0 +1,14 @@
+{
+    "routes": [
+      {
+        "src": "/form",
+        "dest": "/index.html",
+        "status": 200
+      },
+      {
+        "src": "/form/.*",
+        "dest": "/index.html",
+        "status": 200
+      }
+    ]
+  }
