@@ -2,7 +2,7 @@
 const Terimakasih = ({ setIsCopied, phone, isCopied, name }) => {
     // Function to copy the URL to clipboard
     const copyToClipboard = () => {
-      const url = `https://${currentDomain}/${pageName}/form?id=${phone}`;
+      const url = `https://${currentDomain}/${pageName}/form?id=${phone}&nama=${name}`;
       navigator.clipboard
         .writeText(url)
         .then(() => {
