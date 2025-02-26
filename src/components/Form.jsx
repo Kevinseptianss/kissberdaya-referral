@@ -1,17 +1,27 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
+import { sendWhatsAppMessage } from "../utils/utils";
 
-const Form = ({ setIsSubmitted, setPhone }) => {
+const Form = ({ setIsSubmitted, setPhone, tanggalOptions, jamOptions, setName }) => {
   const [formData, setFormData] = useState({
     nama: "",
+    panggilan: "", // New field: Nickname
+    email: "", // New field: Email
     profesi: "",
     kota: "",
     usia: "",
     phone: "",
     zoom: "Ya", // Default value for Zoom attendance
     kelas: "",
+    tanggal: "", // New field: Date
+    jam: "", // New field: Time
+    lokasi: "", // New field: Location
     sumber: "admin", // Default value
   });
+
+  const [namaRef, setNamaRef] = useState("");
+
+  const lokasiOptions = ["Zoom", "Offline (Lokasi)"];
 
   // Function to get URL parameters
   const getUrlParameter = (param) => {
@@ -23,15 +33,21 @@ const Form = ({ setIsSubmitted, setPhone }) => {
     const currentPath = window.location.pathname;
 
     // Extract the first part of the path (e.g., "ikhtiarumrah")
-    const pathSegment = currentPath.split('/')[1]; // Split by "/" and take the second element
-  
+    const pathSegment = currentPath.split("/")[1]; // Split by "/" and take the second element
+
     // Update the kelas field in formData
     setFormData((prevData) => ({ ...prevData, kelas: pathSegment }));
-  
+
     // Handle URL parameters (e.g., "id")
     const sumberParam = getUrlParameter("id");
+    const namaParam = getUrlParameter("nama");
     if (sumberParam) {
       setFormData((prevData) => ({ ...prevData, sumber: sumberParam }));
+    }
+    if (namaParam) {
+        setNamaRef(namaParam);
+    } else {
+        setNamaRef("admin");
     }
   }, []);
 
@@ -48,7 +64,7 @@ const Form = ({ setIsSubmitted, setPhone }) => {
 
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbx21noLKfS8u4N6yAZD3aYtpGt-J67wEQeAQURICkZJpU0ACWS9ONdZKWY4loqelXa9vQ/exec",
+        "https://script.google.com/macros/s/AKfycbwF5TvnLoMX3oLodzcIy2gXVNJ8Si63OSpa98YycsHSdzQsxGfBeMQ2oEOKl2ILA9waQA/exec",
         {
           method: "POST",
           headers: {
@@ -60,7 +76,51 @@ const Form = ({ setIsSubmitted, setPhone }) => {
 
       if (response.ok) {
         console.log("Data saved to Google Sheets!");
+        const text = `
+☪️ *_Assalamualaikum Wr. Wb_*
+Selamat *${formData.panggilan}*
+Anda sudah terdaftar sebagai peserta *${formData.kelas}*
+Dengan data sebagai berikut:
+
+Nama : *${formData.nama}*
+Panggilan : *${formData.panggilan}*
+No Hp : *${formData.phone}*
+Email : *${formData.email}*
+Profesi : *${formData.profesi}*
+Kota/Kab : *${formData.kota}*
+
+✍️Acara ini *GRATIS* dan akan dilaksanakan:
+*🗓️ ${formData.tanggal}*
+*🕣Pkl ${formData.jam}*
+*🌏${formData.lokasi}*
+_[Zoom akan dibagikan H-1 sebelum acara dimulai]_
+
+*${formData.panggilan}* bisa mengikuti dari rumah atau dari manapun
+Bisa menggunakan Laptop atau HP Android Kesayangannya,
+
+*Monitor Zoom bisa dari HP atau Laptop/komputer*
+
+*Simpan nomor ini agar link diatas bisa diklik*
+        `;
+        const phone = formData.phone ? (formData.phone.charAt(0) === '0' ? '62' + formData.phone.slice(1) : formData.phone) : '';
+        await sendWhatsAppMessage(text, phone);
+
+        const text2 = `
+${namaRef} / ${formData.phone} telah berhasil mengundang :
+
+Nama : *${formData.nama}*
+No HP : *${formData.phone}*
+Profesi : *${formData.profesi}*
+Kota/Kab : *${formData.kota}*
+
+Untuk mengikuti Seminar
+*${formData.kelas}*
+
+Terimakasih
+        `;
+        await sendWhatsAppMessage(text2, "6285109190002");
         setPhone(formData.phone);
+        setName(formData.nama);
         setIsSubmitted(true); // Set form as submitted
       } else {
         console.error("Failed to save data to Google Sheets.");
@@ -82,7 +142,7 @@ const Form = ({ setIsSubmitted, setPhone }) => {
             htmlFor="nama"
             className="block text-sm font-medium text-gray-700"
           >
-            Nama
+            Nama Lengkap
           </label>
           <input
             type="text"
@@ -92,6 +152,46 @@ const Form = ({ setIsSubmitted, setPhone }) => {
             onChange={handleChange}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Masukkan nama lengkap"
+            required
+          />
+        </div>
+
+        {/* Nama Panggilan */}
+        <div>
+          <label
+            htmlFor="panggilan"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Nama Panggilan
+          </label>
+          <input
+            type="text"
+            id="panggilan"
+            name="panggilan"
+            value={formData.panggilan}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Masukkan nama panggilan"
+            required
+          />
+        </div>
+
+        {/* Email */}
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Masukkan email"
             required
           />
         </div>
@@ -162,7 +262,7 @@ const Form = ({ setIsSubmitted, setPhone }) => {
             htmlFor="phone"
             className="block text-sm font-medium text-gray-700"
           >
-            Phone
+            Nomor Telepon
           </label>
           <input
             type="tel"
@@ -205,6 +305,81 @@ const Form = ({ setIsSubmitted, setPhone }) => {
               <span className="ml-2">Tidak</span>
             </label>
           </div>
+        </div>
+
+        {/* Tanggal */}
+        <div>
+          <label
+            htmlFor="tanggal"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Tanggal
+          </label>
+          <select
+            id="tanggal"
+            name="tanggal"
+            value={formData.tanggal}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Pilih Tanggal</option>
+            {tanggalOptions.map((date) => (
+              <option key={date} value={date}>
+                {date}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Jam */}
+        <div>
+          <label
+            htmlFor="jam"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Jam
+          </label>
+          <select
+            id="jam"
+            name="jam"
+            value={formData.jam}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Pilih Jam</option>
+            {jamOptions.map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Lokasi */}
+        <div>
+          <label
+            htmlFor="lokasi"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Lokasi
+          </label>
+          <select
+            id="lokasi"
+            name="lokasi"
+            value={formData.lokasi}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Pilih Lokasi</option>
+            {lokasiOptions.map((location) => (
+              <option key={location} value={location}>
+                {location}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Submit Button */}

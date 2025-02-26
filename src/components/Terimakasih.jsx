@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-const Terimakasih = ({ setIsCopied, phone, isCopied }) => {
+const Terimakasih = ({ setIsCopied, phone, isCopied, name }) => {
     // Function to copy the URL to clipboard
     const copyToClipboard = () => {
       const url = `https://${currentDomain}/${pageName}/form?id=${phone}`;
@@ -29,10 +29,10 @@ const Terimakasih = ({ setIsCopied, phone, isCopied }) => {
         <p className="text-lg mb-4">
           Silakan bagikan link ini:{" "}
           <a
-            href={`https://${currentDomain}/${pageName}/form?id=${phone}`}
+            href={`https://${currentDomain}/${pageName}/form?id=${phone}&nama=${name}`}
             className="text-blue-500 underline"
           >
-            https://{currentDomain}/{pageName}/form?id={phone}
+            https://{currentDomain}/{pageName}/form?id={phone}&nama={name}
           </a>
         </p>
         <button
